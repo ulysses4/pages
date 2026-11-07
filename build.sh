@@ -6,6 +6,6 @@ cd "$(dirname "$0")"
 for d in src/*/; do
   name=$(basename "$d"); var="PW_${name^^}"; pw="${!var:-}"
   if [ -z "$pw" ]; then echo "skip $name (set $var)"; continue; fi
-  title=$(sed -n 's:.*<title>\(.*\)</title>.*:\1:p' "$d/index.html" | head -1)
-  node tools/protect.js "$d/index.html" "$name/index.html" "$pw" "${title:-$name}"
+  title="$(tr '[:lower:]' '[:upper:]' <<< "${name:0:1}")${name:1}"
+  node tools/protect.js "$d/index.html" "$name/index.html" "$pw" "$title"
 done
