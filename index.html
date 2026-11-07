@@ -5,23 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Igor's pages</title>
 <style>
-  body{margin:0;background:#fafaf9;font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#1f2a37}
-  main{max-width:640px;margin:0 auto;padding:48px 20px}
-  h1{font-size:26px;margin:0 0 6px} .sub{color:#6b7280;margin:0 0 28px}
-  ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}
-  a.card{display:block;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:box-shadow .15s}
-  a.card:hover{box-shadow:0 4px 18px rgba(0,0,0,.07)}
-  a.card b{font-size:17px} a.card span{display:block;color:#6b7280;font-size:14px;margin-top:2px}
-  .lock{float:right;color:#9ca3af;font-size:13px;margin-top:3px}
+  :root{--bg:#0a0a0a;--tile:#161616;--tile2:#1f1f1f;--line:#2a2a2a;--ink:#f3f4f6;--muted:#9ca3af;--accent:#e11d48}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;min-height:100vh}
+  main{max-width:1040px;margin:0 auto;padding:56px 24px 72px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 36px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+  a.tile{display:flex;flex-direction:column;justify-content:space-between;min-height:190px;padding:22px;border-radius:18px;background:linear-gradient(160deg,var(--tile2),var(--tile));border:1px solid var(--line);text-decoration:none;color:inherit;transition:transform .15s,border-color .15s,box-shadow .15s}
+  a.tile:hover{transform:translateY(-3px);border-color:#3f3f46;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .top{display:flex;justify-content:space-between;align-items:flex-start}
+  .icon{font-size:30px;line-height:1}
+  .lock{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+  .tile b{display:block;font-size:19px;margin-top:22px}
+  .tile span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+  .tile .bar{height:3px;width:44px;border-radius:2px;background:var(--accent);margin-top:16px}
+  footer{margin-top:48px;color:#4b5563;font-size:13px}
 </style>
 </head>
 <body>
 <main>
   <h1>Igor's pages</h1>
-  <p class="sub">Each page asks for its password.</p>
-  <ul id="sites">
-    <li><a class="card" href="london/"><span class="lock">🔒</span><b>London with Dad</b><span>14–18 November 2026 · map, routes and day-by-day plan</span></a></li>
-  </ul>
+  <p class="sub">Pick a project. Each one asks for its own password.</p>
+  <div class="grid">
+    <a class="tile" href="london/">
+      <div class="top"><div class="icon">🇬🇧</div><div class="lock">🔒 private</div></div>
+      <div><b>London with Dad</b><span>14–18 November 2026 · map, routes and day-by-day plan</span><div class="bar"></div></div>
+    </a>
+  </div>
+  <footer>Static pages · GitHub Pages</footer>
 </main>
 </body>
 </html>
