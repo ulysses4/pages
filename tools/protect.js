@@ -36,7 +36,7 @@ async function main() {
   <input id="pw" type="password" placeholder="Password" autofocus>
   <button type="submit">Open</button>
   <div class="err" id="err"></div>
-  <a href="../">← All pages</a>
+  <a href="../">⌂ Home</a>
 </form>
 <script>
 const P=${payload};
