@@ -3,159 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>London, 14–18 November 2026</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<title>Igor's pages</title>
 <style>
-  :root { --ink:#1f2a37; --muted:#6b7280; --line:#e5e7eb; --accent:#b91c1c; --booked:#15803d; --todo:#b45309; --bg:#fafaf9; }
-  * { box-sizing:border-box; }
-  body { margin:0; font:15px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); }
-  header { padding:18px 20px 10px; }
-  header h1 { margin:0; font-size:22px; letter-spacing:.2px; }
-  header p { margin:4px 0 0; color:var(--muted); font-size:14px; }
-  .tabs { display:flex; gap:6px; padding:0 20px 12px; overflow-x:auto; }
-  .tab { border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 14px; cursor:pointer; white-space:nowrap; font-size:14px; }
-  .tab.active { background:var(--ink); color:#fff; border-color:var(--ink); }
-  #map { height:52vh; min-height:360px; margin:0 20px; border-radius:12px; border:1px solid var(--line); }
-  .legend { display:flex; gap:18px; padding:8px 20px 0; color:var(--muted); font-size:13px; flex-wrap:wrap; }
-  .legend span::before { content:""; display:inline-block; width:28px; height:0; border-top:3px solid var(--accent); vertical-align:middle; margin-right:6px; }
-  .legend span.dash::before { border-top-style:dashed; }
-  .legend .b { color:var(--booked); font-weight:600; } .legend .b::before { display:none; }
-  .legend .t { color:var(--todo); font-weight:600; } .legend .t::before { display:none; }
-  section.day { display:none; padding:14px 20px 40px; }
-  section.day.active { display:block; }
-  section.day h2 { margin:6px 0 2px; font-size:19px; }
-  section.day .sub { color:var(--muted); margin:0 0 12px; font-size:14px; }
-  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  th, td { text-align:left; padding:10px 12px; border-top:1px solid var(--line); vertical-align:top; }
-  th { background:#f3f4f6; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border-top:0; }
-  td.n { width:34px; text-align:center; }
-  td.n b { display:inline-block; width:24px; height:24px; line-height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; }
-  td.time { white-space:nowrap; width:92px; color:var(--muted); }
-  .booked { color:var(--booked); font-weight:600; white-space:nowrap; }
-  .todo { color:var(--todo); font-weight:600; white-space:nowrap; }
-  .free { color:var(--muted); white-space:nowrap; }
-  .notes { margin-top:14px; font-size:14px; color:var(--muted); }
-  .marker { background:var(--accent); color:#fff; border-radius:50%; width:26px; height:26px; line-height:26px; text-align:center; font-weight:700; font-size:12px; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
-  @media (max-width:600px){ header,.tabs,section.day,.legend{padding-left:12px;padding-right:12px} #map{margin:0 12px} th:nth-child(4),td:nth-child(4){display:none} }
+  body{margin:0;background:#fafaf9;font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#1f2a37}
+  main{max-width:640px;margin:0 auto;padding:48px 20px}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6b7280;margin:0 0 28px}
+  ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+  a.card{display:block;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:box-shadow .15s}
+  a.card:hover{box-shadow:0 4px 18px rgba(0,0,0,.07)}
+  a.card b{font-size:17px} a.card span{display:block;color:#6b7280;font-size:14px;margin-top:2px}
+  .lock{float:right;color:#9ca3af;font-size:13px;margin-top:3px}
 </style>
 </head>
 <body>
-<header>
-  <h1>London with Dad · 14–18 November 2026</h1>
-  <p>Weekend together; Monday–Wednesday on his own (budget £250/day). Routes are traced stop to stop — solid is on foot, dashed is Tube, bus or boat.</p>
-</header>
-<div class="tabs" id="tabs"></div>
-<div id="map"></div>
-<div class="legend"><span>Walk</span><span class="dash">Tube / bus / boat</span><span class="b">✓ booked</span><span class="t">BOOK</span></div>
-<div id="days"></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-// status: 'booked' | 'todo' | 'free' | 'no' | text
-// link: 'walk' | 'ride' — how you get from the previous stop to this one
-const DAYS = [
- { id:'sat', tab:'Sat 14', title:'Saturday 14 — The City & the river', sub:'Together. Lord Mayor\'s Show, City pub lunch, the river at dusk.',
-   stops:[
-    {t:'9:30', name:'The Wolseley', what:'Breakfast, Piccadilly', ll:[51.5076,-0.1407], status:'optional'},
-    {t:'10:30', name:'St Paul\'s Cathedral steps', what:'Lord Mayor\'s Show — procession leaves Mansion House 11:00, ~1 hr to pass', ll:[51.5138,-0.0984], status:'free', link:'ride'},
-    {t:'12:30', name:'Bank of England Museum', what:'Rare Saturday opening, 11–4', ll:[51.5142,-0.0877], status:'free', link:'walk'},
-    {t:'1:30', name:'Ye Olde Cheshire Cheese', what:'Pint and pie, Fleet Street; then the lanes down to the river', ll:[51.5143,-0.1073], status:'no', link:'walk'},
-    {t:'3:00', name:'Millennium Bridge', what:'Cross to the South Bank — St Paul\'s behind, Tate Modern ahead', ll:[51.5097,-0.0986], status:'free', link:'walk'},
-    {t:'3:15', name:'Tate Modern', what:'Turbine Hall and the free 10th-floor terrace, 20 min', ll:[51.5076,-0.0994], status:'free', link:'walk'},
-    {t:'3:45', name:'Shakespeare\'s Globe → Southwark Cathedral', what:'Thames path east past the Golden Hinde and Borough Market', ll:[51.5063,-0.0900], status:'free', link:'walk'},
-    {t:'4:15', name:'Tower Bridge / HMS Belfast', what:'Lord Mayor\'s flotilla through the bridge; Tower lit up opposite (check time on lordmayorsshow.london)', ll:[51.5055,-0.0754], status:'free', link:'walk'},
-    {t:'7:30', name:'Wiltons', what:'Dinner, Jermyn Street — game, oysters, Dover sole', ll:[51.5078,-0.1375], status:'booked', link:'ride'},
-   ],
-   notes:'Shortcut if legs tire: from Tate Modern take the Uber Boat from Bankside Pier two stops to Tower Pier, or sit at The Anchor, Bankside (river tables).'},
- { id:'sun', tab:'Sun 15', title:'Sunday 15 — Royal London', sub:'Together. Flower market, the Guard, Sunday roast, Churchill\'s bunker, the lights.',
-   stops:[
-    {t:'8:30', name:'Columbia Road Flower Market', what:'Sunday market, bacon roll from a stall', ll:[51.5290,-0.0694], status:'free'},
-    {t:'10:15', name:'Green Park → St James\'s Park', what:'Tube from Bethnal Green; walk the park to the Palace', ll:[51.5027,-0.1348], status:'free', link:'ride'},
-    {t:'11:00', name:'Buckingham Palace', what:'Changing of the Guard (confirm 11:00 on royal.uk)', ll:[51.5014,-0.1419], status:'free', link:'walk'},
-    {t:'12:00', name:'Horse Guards → Whitehall', what:'Down the Mall, Horse Guards Parade, Downing Street gates', ll:[51.5045,-0.1273], status:'free', link:'walk'},
-    {t:'12:30', name:'Parliament Square', what:'Big Ben, Westminster Abbey exterior', ll:[51.5007,-0.1268], status:'free', link:'walk'},
-    {t:'1:30', name:'Hawksmoor Air Street', what:'Sunday roast, Piccadilly Circus', ll:[51.5104,-0.1370], status:'booked', link:'ride'},
-    {t:'3:30', name:'Churchill War Rooms', what:'90 minutes, King Charles Street', ll:[51.5021,-0.1292], status:'booked', link:'ride'},
-    {t:'5:15', name:'Regent Street & Fortnum\'s', what:'Christmas lights, a browse', ll:[51.5110,-0.1385], status:'no', link:'walk'},
-    {t:'7:30', name:'J Sheekey', what:'Easy fish supper, St Martin\'s Court', ll:[51.5111,-0.1278], status:'todo', link:'walk'},
-   ],
-   notes:'West End show moved to Monday or Wednesday night — Sunday is mostly matinees. Pick: Les Misérables, Witness for the Prosecution, The Mousetrap, or Phantom.'},
- { id:'mon', tab:'Mon 16', title:'Monday 16 — Westminster & Greenwich', sub:'Dad solo, ~£115. Abbey at opening, then the river to Greenwich.',
-   stops:[
-    {t:'9:30', name:'Westminster Abbey', what:'Booked 9:30–10:30 entry; stay as long as he likes. £31', ll:[51.4994,-0.1273], status:'booked'},
-    {t:'10:45', name:'Parliament Square & Whitehall', what:'Big Ben, Cenotaph, Horse Guards', ll:[51.5007,-0.1268], status:'free', link:'walk'},
-    {t:'11:30', name:'Regency Café', what:'Classic caff lunch, Regency Street', ll:[51.4946,-0.1328], status:'no', link:'walk'},
-    {t:'1:00', name:'Westminster Pier', what:'Uber Boat (Thames Clippers) downriver, ~£10, 40 min', ll:[51.5017,-0.1237], status:'no', link:'walk'},
-    {t:'1:45', name:'Cutty Sark', what:'Greenwich Pier; tea clipper, £20', ll:[51.4828,-0.0096], status:'no', link:'ride'},
-    {t:'3:00', name:'Royal Observatory', what:'Up the hill, meridian line, the view back to the City. £24', ll:[51.4769,-0.0005], status:'no', link:'walk'},
-    {t:'4:30', name:'Greenwich Pier', what:'Boat back at dusk', ll:[51.4833,-0.0094], status:'no', link:'walk'},
-    {t:'7:30', name:'Rules (or The Guinea Grill)', what:'Dinner, Maiden Lane — Igor joining if free. Or West End show tonight', ll:[51.5103,-0.1230], status:'todo', link:'ride'},
-   ],
-   notes:'Black cab from the pier to dinner is a fair treat, ~£20. If Rules is full, The Guinea Grill in Mayfair (51.5107,-0.1472).'},
- { id:'tue', tab:'Tue 17', title:'Tuesday 17 — The slow day', sub:'Dad solo, ~£50. Museums, a bus up top, a pub with the papers.',
-   stops:[
-    {t:'10:00', name:'British Museum', what:'Rosetta Stone, Egyptian galleries, 2 hrs max. Free', ll:[51.5194,-0.1270], status:'free'},
-    {t:'12:30', name:'The Lamb', what:'Pub lunch, Lamb\'s Conduit Street', ll:[51.5222,-0.1186], status:'no', link:'walk'},
-    {t:'2:00', name:'Aldwych bus stop', what:'Bus 11 top deck — Strand, Trafalgar Sq, Whitehall, Westminster, Victoria', ll:[51.5126,-0.1177], status:'no', link:'walk'},
-    {t:'2:45', name:'Sloane Square', what:'Hop off; walk King\'s Road or Chelsea side streets', ll:[51.4924,-0.1565], status:'no', link:'ride'},
-    {t:'4:00', name:'Lamb & Flag', what:'Black cab back; a pint and the papers, Rose Street, Covent Garden', ll:[51.5117,-0.1256], status:'no', link:'ride'},
-    {t:'7:00', name:'Dishoom Covent Garden', what:'Dinner, walk-in — Igor joining if free', ll:[51.5125,-0.1258], status:'no', link:'walk'},
-   ],
-   notes:'Nothing to book. If he wants more, the National Gallery is free and 5 min from the pub.'},
- { id:'wed', tab:'Wed 18', title:'Wednesday 18 — St Paul\'s & the Tower', sub:'Dad solo, ~£130. The two big tickets, then the sunset.',
-   stops:[
-    {t:'9:00', name:'St Paul\'s Cathedral', what:'Dome climb if knees allow. £26', ll:[51.5138,-0.0984], status:'todo'},
-    {t:'11:00', name:'Tower of London', what:'Join the Yeoman Warder tour first; Crown Jewels. £37', ll:[51.5081,-0.0759], status:'todo', link:'walk'},
-    {t:'2:00', name:'Tower Bridge', what:'Glass walkway, £13', ll:[51.5055,-0.0754], status:'no', link:'walk'},
-    {t:'2:45', name:'Borough Market', what:'Late lunch', ll:[51.5055,-0.0910], status:'no', link:'walk'},
-    {t:'4:00', name:'Sky Garden', what:'Sunset over the river. Free, timed ticket', ll:[51.5112,-0.0836], status:'todo', link:'walk'},
-    {t:'5:15', name:'Tower Hill bus stop', what:'Bus 15 top deck past St Paul\'s and Fleet Street to Trafalgar Square', ll:[51.5098,-0.0766], status:'no', link:'walk'},
-    {t:'7:30', name:'J Sheekey', what:'Last-night dinner — Igor joining if free. Or West End show tonight', ll:[51.5111,-0.1278], status:'todo', link:'ride'},
-   ],
-   notes:'Tower first-entry slot sells; book 10:00 or 11:00. Sky Garden slots release ~3 weeks out.'},
-];
-
-const map = L.map('map', {scrollWheelZoom:false});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19 }).addTo(map);
-let layer = L.layerGroup().addTo(map);
-
-function statusCell(s){
-  if(s==='booked') return '<span class="booked">✓ booked</span>';
-  if(s==='todo') return '<span class="todo">BOOK</span>';
-  if(s==='free') return '<span class="free">free</span>';
-  if(s==='no') return '<span class="free">—</span>';
-  return '<span class="free">'+s+'</span>';
-}
-
-function show(id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.id===id));
-  document.querySelectorAll('section.day').forEach(s=>s.classList.toggle('active', s.id==='day-'+id));
-  const day = DAYS.find(d=>d.id===id);
-  layer.clearLayers();
-  const pts = [];
-  day.stops.forEach((s,i)=>{
-    const icon = L.divIcon({className:'', html:'<div class="marker">'+(i+1)+'</div>', iconSize:[26,26], iconAnchor:[13,13]});
-    L.marker(s.ll,{icon}).bindPopup('<b>'+(i+1)+'. '+s.name+'</b><br>'+s.t+' — '+s.what).addTo(layer);
-    if(i>0){
-      const prev = day.stops[i-1].ll;
-      L.polyline([prev, s.ll], {color:'#b91c1c', weight:4, opacity:.85, dashArray: s.link==='ride' ? '8 8' : null}).addTo(layer);
-    }
-    pts.push(s.ll);
-  });
-  map.fitBounds(L.latLngBounds(pts).pad(0.15));
-  history.replaceState(null,'','#'+id);
-}
-
-const tabs = document.getElementById('tabs'), days = document.getElementById('days');
-DAYS.forEach(d=>{
-  const b = document.createElement('button'); b.className='tab'; b.textContent=d.tab; b.dataset.id=d.id; b.onclick=()=>show(d.id); tabs.appendChild(b);
-  const rows = d.stops.map((s,i)=>'<tr><td class="n"><b>'+(i+1)+'</b></td><td class="time">'+s.t+'</td><td><b>'+s.name+'</b></td><td>'+s.what+'</td><td>'+statusCell(s.status)+'</td></tr>').join('');
-  const sec = document.createElement('section'); sec.className='day'; sec.id='day-'+d.id;
-  sec.innerHTML = '<h2>'+d.title+'</h2><p class="sub">'+d.sub+'</p><table><thead><tr><th></th><th>Time</th><th>Stop</th><th>What</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>'+(d.notes?'<p class="notes">'+d.notes+'</p>':'');
-  days.appendChild(sec);
-});
-show((location.hash||'#sat').slice(1));
-</script>
+<main>
+  <h1>Igor's pages</h1>
+  <p class="sub">Each page asks for its password.</p>
+  <ul id="sites">
+    <li><a class="card" href="london/"><span class="lock">🔒</span><b>London with Dad</b><span>14–18 November 2026 · map, routes and day-by-day plan</span></a></li>
+  </ul>
+</main>
 </body>
 </html>
