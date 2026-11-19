@@ -7,8 +7,10 @@ const { webcrypto } = require('crypto');
 const { subtle } = webcrypto;
 
 async function main() {
-  const [src, out, password, title = 'Protected page'] = process.argv.slice(2);
-  if (!src || !out || !password) { console.error('usage: protect.js <src> <out> <password> [title]'); process.exit(1); }
+  const noHome = process.argv.includes('--no-home-link');
+  const args = process.argv.slice(2).filter(a => a !== '--no-home-link');
+  const [src, out, password, title = 'Protected page'] = args;
+  if (!src || !out || !password) { console.error('usage: protect.js <src> <out> <password> [title] [--no-home-link]'); process.exit(1); }
   const html = fs.readFileSync(src, 'utf8');
   const salt = webcrypto.getRandomValues(new Uint8Array(16));
   const iv = webcrypto.getRandomValues(new Uint8Array(12));
@@ -36,7 +38,7 @@ async function main() {
   <input id="pw" type="password" placeholder="Password" autofocus>
   <button type="submit">Open</button>
   <div class="err" id="err"></div>
-  <a href="../">⌂ Home</a><a href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false">↻ Refresh</a>
+  ${noHome ? '' : '<a href="../">⌂ Home</a>'}<a href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false">↻ Refresh</a>
 </form>
 <script>
 const P=${payload};
