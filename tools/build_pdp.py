@@ -15,6 +15,8 @@ from PIL import Image
 PDP = "/home/ulysses/GitHub/PDP/"
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "pdp",
                    "index.html")
+HOME = os.path.join(os.path.dirname(__file__), "..", "src", "home",
+                    "index.html")
 
 SECTIONS = [
     ("Positions", [("PDP_graph.png", "Positions"),
@@ -89,6 +91,16 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w").write(html)
     print(f"-> {os.path.normpath(OUT)} ({len(html)/1e6:.1f} MB, {asof})")
+
+    # mirror the stamp onto the landing page's PDP tile (caller re-encrypts
+    # the home page whenever this file changes)
+    import re
+    h = open(HOME).read()
+    h2 = re.sub(r"(<b>PDP</b><span>)[^<]*(</span>)",
+                rf"\g<1>{asof}\g<2>", h)
+    if h2 != h:
+        open(HOME, "w").write(h2)
+        print(f"-> {os.path.normpath(HOME)} (tile stamp refreshed)")
 
 
 if __name__ == "__main__":
