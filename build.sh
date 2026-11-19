@@ -3,9 +3,7 @@
 # Passwords come from the environment: PW_<NAME> (uppercase), e.g. PW_LONDON=... ./build.sh
 set -euo pipefail
 cd "$(dirname "$0")"
-# protect.py is a node-less twin of protect.js; use whichever runs
 PROTECT="node tools/protect.js"
-command -v node >/dev/null || PROTECT="python3 tools/protect.py"
 for d in src/*/; do
   name=$(basename "$d"); var="PW_${name^^}"; pw="${!var:-}"
   if [ -z "$pw" ]; then echo "skip $name (set $var)"; continue; fi
