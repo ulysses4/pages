@@ -6,8 +6,11 @@ Thursday after the charts regenerate, then encrypted via tools/protect.js.
 """
 
 import base64
+import io
 import os
 from datetime import date
+
+from PIL import Image
 
 PDP = "/home/ulysses/GitHub/PDP/"
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "pdp",
@@ -35,9 +38,18 @@ def main():
     for head, files in SECTIONS:
         body.append(f'<h2>{head}</h2>')
         for f, label in files:
-            b64 = base64.b64encode(open(PDP + f, "rb").read()).decode()
+            # charts are flat-color line art: palette PNG / lossless WebP
+            # shrink them 70-90% with no visible change (JPEG does neither)
+            im = Image.open(PDP + f).convert("RGB")
+            p1, p2 = io.BytesIO(), io.BytesIO()
+            im.quantize(colors=256, method=2).save(p1, "PNG", optimize=True)
+            im.save(p2, "WEBP", lossless=True, method=6)
+            raw, mime = ((p1.getvalue(), "png")
+                         if p1.tell() <= p2.tell()
+                         else (p2.getvalue(), "webp"))
+            b64 = base64.b64encode(raw).decode()
             body.append(
-                f'<figure><img src="data:image/png;base64,{b64}" '
+                f'<figure><img src="data:image/{mime};base64,{b64}" '
                 f'alt="{label}" loading="lazy">'
                 f'<figcaption>{label}</figcaption></figure>')
     html = f"""<!DOCTYPE html>
