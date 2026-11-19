@@ -43,6 +43,7 @@ async function main() {
 <script>
 const P=${payload};
 const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const LOCK='<a href="#" onclick="try{localStorage.removeItem(\\'pages:pw\\');sessionStorage.removeItem(\\'pages:pw\\')}catch(_){};location.reload();return false" style="position:fixed;right:12px;bottom:10px;z-index:9999;font:12px -apple-system,sans-serif;color:#9ca3af;background:rgba(127,127,127,.12);padding:4px 10px;border-radius:999px;text-decoration:none" title="Forget the password on this device">\\u{1F512} Lock</a>';
 async function unlock(pw){
   const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
   const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u8(P.salt),iterations:P.iterations,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
@@ -54,10 +55,10 @@ document.getElementById('f').addEventListener('submit',async e=>{
   const err=document.getElementById('err'); err.textContent='Checking…';
   try{ const html=await unlock(document.getElementById('pw').value);
        try{localStorage.setItem('pages:pw',document.getElementById('pw').value)}catch(_){}
-       document.open(); document.write(html); document.close(); }
+       document.open(); document.write(html+LOCK); document.close(); }
   catch(_){ err.textContent='Wrong password.'; }
 });
-(async()=>{ try{ const s=localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); if(s){ const html=await unlock(s); document.open(); document.write(html); document.close(); } }catch(_){} })();
+(async()=>{ try{ const s=localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); if(s){ const html=await unlock(s); document.open(); document.write(html+LOCK); document.close(); } }catch(_){} })();
 </script></body></html>`;
   fs.mkdirSync(require('path').dirname(out), { recursive: true });
   fs.writeFileSync(out, page);
