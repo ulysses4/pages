@@ -8,7 +8,7 @@ Thursday after the charts regenerate, then encrypted via tools/protect.js.
 import base64
 import io
 import os
-from datetime import date
+from datetime import datetime
 
 from PIL import Image
 
@@ -33,7 +33,9 @@ LOCK_JS = ("try{localStorage.removeItem('pages:pw');"
 def main():
     stamp = max(os.path.getmtime(PDP + f) for _, fs in SECTIONS
                 for f, _ in fs)
-    asof = date.fromtimestamp(stamp).strftime("%-d %B %Y")
+    dt = datetime.fromtimestamp(stamp)
+    asof = (f"(updated {dt:%A} at "
+            f"{dt.strftime('%I:%M%p').lstrip('0')}, {dt:%m/%d/%Y})")
     body = []
     for head, files in SECTIONS:
         body.append(f'<h2>{head}</h2>')
@@ -57,7 +59,7 @@ def main():
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Primary Dealer Positions · {asof}</title>
+<title>PDP</title>
 <style>
   :root{{--bg:#0a0a0a;--ink:#f3f4f6;--muted:#9ca3af;--line:#2a2a2a}}
   body{{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}}
@@ -78,15 +80,15 @@ def main():
   <div class="bar"><a class="home" href="../">&#8962; Home</a>
     <a class="home" href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false" title="Reload latest version">&#8635; Refresh</a>
     <a class="home" href="#" onclick="{LOCK_JS}" title="Forget the password on this device">&#128274; Lock</a></div>
-  <h1>Primary Dealer Positions</h1>
-  <p class="sub">NY Fed weekly data · charts updated {asof} (runs Thursdays)</p>
+  <h1>PDP</h1>
+  <p class="sub">{asof}</p>
   {chr(10).join(body)}
 </main>
 </body>
 </html>"""
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w").write(html)
-    print(f"-> {os.path.normpath(OUT)} ({len(html)/1e6:.1f} MB, as of {asof})")
+    print(f"-> {os.path.normpath(OUT)} ({len(html)/1e6:.1f} MB, {asof})")
 
 
 if __name__ == "__main__":
