@@ -53,11 +53,11 @@ document.getElementById('f').addEventListener('submit',async e=>{
   e.preventDefault();
   const err=document.getElementById('err'); err.textContent='Checking…';
   try{ const html=await unlock(document.getElementById('pw').value);
-       try{sessionStorage.setItem(location.pathname,document.getElementById('pw').value)}catch(_){}
+       try{sessionStorage.setItem('pages:pw',document.getElementById('pw').value)}catch(_){}
        document.open(); document.write(html); document.close(); }
   catch(_){ err.textContent='Wrong password.'; }
 });
-(async()=>{ try{ const s=sessionStorage.getItem(location.pathname); if(s){ const html=await unlock(s); document.open(); document.write(html); document.close(); } }catch(_){} })();
+(async()=>{ try{ const s=sessionStorage.getItem('pages:pw')||sessionStorage.getItem(location.pathname); if(s){ const html=await unlock(s); document.open(); document.write(html); document.close(); } }catch(_){} })();
 </script></body></html>`;
   fs.mkdirSync(require('path').dirname(out), { recursive: true });
   fs.writeFileSync(out, page);
