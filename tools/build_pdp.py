@@ -38,6 +38,7 @@ def main():
     dt = datetime.fromtimestamp(stamp)
     asof = (f"(updated {dt:%A} at "
             f"{dt.strftime('%I:%M%p').lstrip('0')}, {dt:%m/%d/%Y})")
+    asof_long = dt.strftime("%-d %B %Y")
     body = []
     for head, files in SECTIONS:
         body.append(f'<h2>{head}</h2>')
@@ -83,7 +84,7 @@ def main():
     <a class="home" href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false" title="Reload latest version">&#8635; Refresh</a>
     <a class="home" href="#" onclick="{LOCK_JS}" title="Forget the password on this device">&#128274; Lock</a></div>
   <h1>PDP</h1>
-  <p class="sub">{asof}</p>
+  <p class="sub">NY Fed weekly data · charts updated {asof_long} (runs Thursdays)</p>
   {chr(10).join(body)}
 </main>
 </body>
