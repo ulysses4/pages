@@ -20,6 +20,7 @@ async function main() {
   const ct = new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(html)));
   const b64 = (u8) => Buffer.from(u8).toString('base64');
   const payload = JSON.stringify({ salt: b64(salt), iv: b64(iv), iterations, ct: b64(ct) });
+  const sig = b64(ct).slice(0, 32);   // version fingerprint for the freshness probe
 
   const page = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -43,6 +44,10 @@ async function main() {
 <script>
 const P=${payload};
 const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+// after rendering, probe the server copy in the background; if this page is a
+// stale cache (its fingerprint is absent from the live copy), reload once with
+// a cache-buster. 20s guard stops any reload loop.
+const FRESH='<scr'+'ipt>(()=>{const C="${sig}";try{if((+sessionStorage.getItem("pages:fr")||0)>Date.now()-20000)return}catch(_){}fetch(location.pathname,{cache:"no-store"}).then(r=>r.ok?r.text():"").then(t=>{if(t&&t.indexOf(C)<0){try{sessionStorage.setItem("pages:fr",String(Date.now()))}catch(_){}location.replace(location.pathname+"?r="+Date.now())}}).catch(()=>{})})()</scr'+'ipt>';
 async function unlock(pw){
   const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
   const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u8(P.salt),iterations:P.iterations,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
@@ -54,10 +59,10 @@ document.getElementById('f').addEventListener('submit',async e=>{
   const err=document.getElementById('err'); err.textContent='Checking…';
   try{ const html=await unlock(document.getElementById('pw').value);
        try{localStorage.setItem('pages:pw',document.getElementById('pw').value)}catch(_){}
-       document.open(); document.write(html); document.close(); }
+       document.open(); document.write(html+FRESH); document.close(); }
   catch(_){ err.textContent='Wrong password.'; }
 });
-(async()=>{ try{ const s=localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); if(s){ const html=await unlock(s); document.open(); document.write(html); document.close(); } }catch(_){} })();
+(async()=>{ try{ const s=localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); if(s){ const html=await unlock(s); document.open(); document.write(html+FRESH); document.close(); } }catch(_){} })();
 </script></body></html>`;
   fs.mkdirSync(require('path').dirname(out), { recursive: true });
   fs.writeFileSync(out, page);
