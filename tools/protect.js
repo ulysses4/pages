@@ -26,13 +26,15 @@ async function main() {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fafaf9;font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#1f2a37}
-  form{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:28px 26px;width:min(92vw,360px);box-shadow:0 4px 20px rgba(0,0,0,.05)}
-  h1{font-size:18px;margin:0 0 4px} p{margin:0 0 16px;color:#6b7280;font-size:14px}
-  input{width:100%;box-sizing:border-box;font-size:17px;padding:11px 12px;border:1px solid #d1d5db;border-radius:10px}
-  button{margin-top:12px;width:100%;padding:11px;border:0;border-radius:10px;background:#1f2a37;color:#fff;font-size:16px;cursor:pointer}
-  .err{color:#b91c1c;font-size:14px;margin-top:10px;min-height:20px}
-  a{color:#6b7280;font-size:13px;display:block;text-align:center;margin-top:14px}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a0a;font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#f3f4f6}
+  form{background:linear-gradient(160deg,#1f1f1f,#161616);border:1px solid #2a2a2a;border-radius:18px;padding:28px 26px;width:min(92vw,360px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  h1{font-size:18px;margin:0 0 4px} p{margin:0 0 16px;color:#9ca3af;font-size:14px}
+  input{width:100%;box-sizing:border-box;font-size:17px;padding:11px 12px;border:1px solid #2a2a2a;border-radius:10px;background:#0f0f0f;color:#f3f4f6}
+  input:focus{outline:none;border-color:#e11d48}
+  button{margin-top:12px;width:100%;padding:11px;border:0;border-radius:10px;background:#e11d48;color:#fff;font-size:16px;cursor:pointer}
+  .err{color:#f87171;font-size:14px;margin-top:10px;min-height:20px}
+  a{color:#9ca3af;font-size:13px;display:block;text-align:center;margin-top:14px;text-decoration:none}
+  a:hover{color:#f3f4f6}
 </style></head><body>
 <form id="f" autocomplete="off">
   <h1>${title}</h1><p>Enter the password to open this page.</p>
