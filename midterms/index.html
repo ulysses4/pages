@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Midterms AI Tracker</title>
+<meta name="description" content="Live scorecard mapping 2026 midterm results onto AI regulation stances and data-center geography, with a running equity-market read.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Companion to Dot Plot Detective: same type and surface tokens. The chart is a
+   ranked bar list of market relevance per race; bars fill blue or red as races are
+   called, stay hollow while uncalled, so the night's shape fills in left to right. */
+:root{
+  --bg:#f9f9f7; --surface:#fcfcfb; --surface-raised:#ffffff;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --accent:#2a78d6; --accent-soft:#eaf1fb;
+  --dem:#2a78d6; --dem-soft:#eaf1fb;
+  --rep:#d03b3b; --rep-soft:#fbe9e9;
+  --head:#d03b3b; --tail:#0ca30c;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d0d0d; --surface:#1a1a19; --surface-raised:#201f1e;
+    --text-primary:#f0efec; --text-secondary:#c3c2b7; --text-muted:#8e8c86;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+    --accent:#3987e5; --accent-soft:#122235;
+    --dem:#3987e5; --dem-soft:#122235;
+    --rep:#e66767; --rep-soft:#331515;
+    --head:#e66767; --tail:#2fbf2f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d0d0d; --surface:#1a1a19; --surface-raised:#201f1e;
+  --text-primary:#f0efec; --text-secondary:#c3c2b7; --text-muted:#8e8c86;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+  --accent:#3987e5; --accent-soft:#122235;
+  --dem:#3987e5; --dem-soft:#122235;
+  --rep:#e66767; --rep-soft:#331515;
+  --head:#e66767; --tail:#2fbf2f;
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+body{background:var(--bg); color:var(--text-primary); font-family:var(--sans); margin:0;
+  padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));}
+.wrap{max-width:980px; margin:0 auto; padding-block:28px 60px;}
+header.page{margin-bottom:22px;}
+.eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin:0 0 10px; display:flex; gap:14px; flex-wrap:wrap;}
+.eyebrow a{color:var(--text-muted); text-decoration:none; border-bottom:1px dotted var(--axis);}
+h1{font-family:var(--serif); font-weight:700; font-size:clamp(28px,4.4vw,40px); line-height:1.08; margin:0 0 12px; text-wrap:balance; letter-spacing:-0.01em;}
+.lede{font-size:15.5px; line-height:1.55; color:var(--text-secondary); max-width:680px; margin:0 0 14px;}
+.stamp{font-family:var(--mono); font-size:12px; color:var(--text-muted);}
+a{color:var(--accent);}
+details.method{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:8px;}
+details.method summary{cursor:pointer; font-weight:600; font-size:14px; list-style:none; display:flex; align-items:center; gap:8px;}
+details.method summary::before{content:"→"; display:inline-block; transition:transform .15s ease; color:var(--accent); font-size:13px;}
+details.method[open] summary::before{transform:rotate(90deg);}
+details.method .body{padding-top:10px; font-size:13.5px; line-height:1.6; color:var(--text-secondary);}
+details.method .body p{margin:0 0 10px;}
+details.method code{font-family:var(--mono); font-size:12.5px; background:var(--grid); padding:1px 5px; border-radius:4px;}
+section.card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px 16px; margin-top:22px;}
+section.card h2{font-family:var(--serif); font-size:19px; font-weight:600; margin:0 0 4px;}
+section.card .sub{font-size:13px; color:var(--text-muted); margin:0 0 14px;}
+
+/* projection */
+.proj{display:grid; grid-template-columns:minmax(0,1fr) 240px; gap:22px; align-items:start;}
+@media (max-width:720px){.proj{grid-template-columns:1fr;}}
+.proj .label{font-family:var(--serif); font-size:24px; font-weight:600; margin:0 0 8px; line-height:1.2;}
+.proj p{font-size:14.5px; line-height:1.6; color:var(--text-secondary); margin:0 0 10px;}
+.proj ul{margin:0; padding-left:18px; font-size:14px; line-height:1.55; color:var(--text-secondary);}
+.proj li{margin-bottom:6px;}
+.tile{background:var(--surface-raised); border:1px solid var(--border); border-radius:12px; padding:14px 16px;}
+.tile .k{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin:0 0 6px;}
+.tile .v{font-family:var(--serif); font-size:34px; font-weight:700; line-height:1; margin:0 0 4px;}
+.tile .v.head{color:var(--head);} .tile .v.tail{color:var(--tail);}
+.tile .d{font-size:12.5px; color:var(--text-secondary); line-height:1.45;}
+.tile + .tile{margin-top:10px;}
+.tile .row{display:flex; justify-content:space-between; gap:12px; font-size:13px; padding:4px 0; border-top:1px solid var(--grid);}
+.tile .row b{text-align:right;}
+.tile .row:first-of-type{border-top:0;}
+.tile .row b{font-weight:600;}
+.meter{height:10px; background:var(--grid); border-radius:5px; position:relative; margin:10px 0 4px; overflow:hidden;}
+.meter .fill{position:absolute; top:0; bottom:0; border-radius:5px;}
+.meter .mid{position:absolute; left:50%; top:-2px; bottom:-2px; width:2px; background:var(--axis);}
+
+/* legend + chart */
+.legend{display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin:2px 0 12px; font-size:13px; color:var(--text-secondary);}
+.legend .item{display:flex; align-items:center; gap:7px;}
+.legend .swatch{width:14px; height:10px; border-radius:3px; display:inline-block; flex:none; border:1.5px solid var(--axis);}
+.legend .swatch.d{background:var(--dem); border-color:var(--dem);}
+.legend .swatch.r{background:var(--rep); border-color:var(--rep);}
+.legend .swatch.dl{background:repeating-linear-gradient(45deg, var(--dem) 0 3px, transparent 3px 6px); border-color:var(--dem);}
+.legend .swatch.rl{background:repeating-linear-gradient(45deg, var(--rep) 0 3px, transparent 3px 6px); border-color:var(--rep);}
+.controls{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px;}
+.controls button{font:inherit; font-size:12.5px; padding:5px 10px; border-radius:999px; border:1px solid var(--border); background:var(--surface-raised); color:var(--text-secondary); cursor:pointer;}
+.controls button[aria-pressed="true"]{background:var(--accent-soft); color:var(--accent); border-color:var(--accent);}
+.chart-scroll{overflow-x:auto; margin:0 -4px; padding:0 4px 4px; position:relative;}
+.chart-scroll svg{width:100%; height:auto; display:block; font-family:var(--sans);}
+.bar{cursor:pointer;}
+.bar.pending{fill:none; stroke:var(--axis); stroke-width:1.5; stroke-dasharray:3 3;}
+.bar.cd{fill:var(--dem);} .bar.cr{fill:var(--rep);}
+.bar.ld{fill:url(#hd);} .bar.lr{fill:url(#hr);}
+.bar.hot{filter:brightness(1.08);}
+.lbl{fill:var(--text-primary); font-size:12.5px; dominant-baseline:central;}
+.lbl.muted{fill:var(--text-muted);}
+.val{fill:var(--text-muted); font-family:var(--mono); font-size:11px; dominant-baseline:central;}
+.gridl{stroke:var(--grid); stroke-width:1;}
+.axis-t{fill:var(--text-muted); font-family:var(--mono); font-size:10.5px; text-anchor:middle;}
+.tip{position:absolute; pointer-events:none; background:var(--surface-raised); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:12.5px; line-height:1.45; color:var(--text-primary); box-shadow:0 4px 14px rgba(0,0,0,.12); max-width:280px; display:none; z-index:2;}
+.tip b{font-weight:600;} .tip .m{color:var(--text-muted); font-family:var(--mono); font-size:11px;}
+
+/* tables */
+.tbl-scroll{overflow-x:auto;}
+table{border-collapse:collapse; width:100%; font-size:13px;}
+th,td{text-align:left; padding:7px 9px; border-bottom:1px solid var(--grid); vertical-align:top;}
+th{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); font-weight:500; white-space:nowrap; cursor:pointer;}
+th.sorted::after{content:" ↓"; color:var(--accent);}
+td.num{font-family:var(--mono); text-align:right; white-space:nowrap;}
+td a{color:inherit; text-decoration:none; border-bottom:1px dotted var(--axis);}
+.pill{display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 7px; border-radius:999px; border:1px solid var(--border); color:var(--text-secondary); white-space:nowrap;}
+.pill.cd{background:var(--dem-soft); color:var(--dem); border-color:transparent;}
+.pill.cr{background:var(--rep-soft); color:var(--rep); border-color:transparent;}
+.pill.ld{color:var(--dem); border-color:var(--dem);} .pill.lr{color:var(--rep); border-color:var(--rep);}
+.score{font-family:var(--mono);}
+.score.neg{color:var(--head);} .score.pos{color:var(--tail);}
+.muted{color:var(--text-muted);}
+.foot{font-size:12px; color:var(--text-muted); margin-top:24px; line-height:1.6;}
+.err{color:var(--rep); font-size:14px;}
+#gate{max-width:420px; margin:40px auto 0;}
+#gate .tile{padding:22px 24px;}
+#gate h2{font-family:var(--serif); font-size:20px; font-weight:600; margin:0 0 6px;}
+#gate p{font-size:13.5px; color:var(--text-secondary); margin:0 0 14px; line-height:1.5;}
+#gate form{display:flex; gap:8px;}
+#gate input{flex:1; font:inherit; font-size:14px; padding:9px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-primary);}
+#gate button{font:inherit; font-size:14px; font-weight:600; padding:9px 14px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer;}
+#gate .msg{min-height:18px; font-size:12.5px; color:var(--rep); margin:8px 0 0;}
+#app[hidden]{display:none;}
+</style>
+</head>
+<body>
+<div style="display:flex;justify-content:flex-start;gap:18px;max-width:1080px;margin:12px auto 0;padding:0 16px;font-size:14px;font-family:system-ui,-apple-system,sans-serif">
+  <a href="../" style="color:#888;text-decoration:none">&#8962; Home</a>
+  <a href="#" onclick="location.replace(location.pathname+location.search+(location.search?'&':'?')+'r='+Date.now());return false" style="color:#888;text-decoration:none" title="Reload latest version">&#8635; Refresh</a>
+  <a href="#" onclick="try{localStorage.removeItem('pages:pw');sessionStorage.removeItem('pages:pw')}catch(e){};location.reload();return false" style="color:#888;text-decoration:none" title="Forget the site password on this device">&#128274; Lock</a>
+</div>
+<div class="wrap">
+<header class="page">
+  <p class="eyebrow"><a href="../">← Dot Plot Detective</a><a href="map.html">AI Buildout Risk Map →</a><span>Election night 2026</span></p>
+  <h1>Midterms AI Tracker</h1>
+  <p class="lede">Which races matter for AI-exposed equities, and which way. Each race is scored by the gap between the nominees' AI stances, weighted by how much data-center buildout sits in the state, and the bars fill in as results are called.</p>
+  <p class="stamp" id="stamp"></p>
+</header>
+
+<div id="gate" hidden>
+  <div class="tile">
+    <h2>Enter passphrase</h2>
+    <p>The tracker data is encrypted in the browser. Nothing is sent anywhere; the passphrase is kept for this tab only.</p>
+    <form id="gate-form"><input id="pw" type="password" autocomplete="current-password" placeholder="Passphrase" autofocus><button type="submit">Open</button></form>
+    <p class="msg" id="gate-msg"></p>
+  </div>
+</div>
+
+<div id="app" hidden>
+<details class="method">
+  <summary>How the score works</summary>
+  <div class="body">
+    <p><code>relevance = |D stance − R stance| × data-center weight × office multiplier × competitiveness</code>. Stance runs −2 (champions binding AI regulation or data-center moratoria) to +2 (champions AI infrastructure or federal preemption); data-center weight runs 0 (none built or planned) to 3 (top-tier hub); office multiplier is 1.0 for Senate and governor, 0.5 for House; competitiveness is 1.0 toss-up, 0.8 lean, 0.5 likely, 0.2 solid, so a safe-seat result is treated as already priced.</p>
+    <p>The sign comes from who wins. An AI-restrictive candidate losing in a buildout state is a <b>tailwind</b> for AI-exposed equities; winning is a <b>headwind</b>. If both nominees score the same, the race is neutral however it breaks. The running tally sums the signed relevance of called races only; a chamber-control overlay is applied in the written projection, not the tally. This is a scenario read, not investment advice. Stances are sourced from votes, bills and statements linked in the table; the full working doc with the state-by-state data-center map is <a id="doclink" href="#">here</a>.</p>
+  </div>
+</details>
+
+<section class="card" id="projection">
+  <h2>Current projection</h2>
+  <p class="sub" id="proj-sub">—</p>
+  <div class="proj">
+    <div>
+      <p class="label" id="proj-label">—</p>
+      <p id="proj-lead"></p>
+      <ul id="proj-bullets"></ul>
+    </div>
+    <div>
+      <div class="tile">
+        <p class="k">Running tally (called races)</p>
+        <p class="v" id="tally">0.0</p>
+        <div class="meter"><div class="mid"></div><div class="fill" id="meter-fill"></div></div>
+        <p class="d" id="tally-d">Negative = headwind for AI equities · positive = tailwind</p>
+      </div>
+      <div class="tile">
+        <p class="k">Chamber control</p>
+        <div class="row"><span>Senate</span><b id="sen">—</b></div>
+        <div class="row"><span>House</span><b id="hse">—</b></div>
+      </div>
+      <div class="tile">
+        <p class="k">Progress</p>
+        <div class="row"><span>Called</span><b id="n-called">—</b></div>
+        <div class="row"><span>Leading / too close</span><b id="n-lead">—</b></div>
+        <div class="row"><span>Not reported</span><b id="n-pend">—</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Market relevance by race</h2>
+  <p class="sub">Ranked by relevance. Hollow bars are uncalled; hatched bars show who is leading; solid bars are called. Hover a bar for the stance basis.</p>
+  <div class="legend">
+    <span class="item"><span class="swatch"></span>Not called</span>
+    <span class="item"><span class="swatch dl"></span>D leading</span>
+    <span class="item"><span class="swatch rl"></span>R leading</span>
+    <span class="item"><span class="swatch d"></span>Called D</span>
+    <span class="item"><span class="swatch r"></span>Called R</span>
+  </div>
+  <div class="controls" id="filters">
+    <button data-f="all" aria-pressed="true">All</button>
+    <button data-f="Sen">Senate</button>
+    <button data-f="Gov">Governor</button>
+    <button data-f="House">House</button>
+    <button data-f="top">Relevance ≥ 1</button>
+  </div>
+  <div class="chart-scroll"><div id="chart"></div><div class="tip" id="tip"></div></div>
+</section>
+
+<section class="card">
+  <h2>Race tracker</h2>
+  <p class="sub">Click a column to sort. Scores and weights are fixed; status, winner and margin update each run.</p>
+  <div class="tbl-scroll"><table id="races"><thead><tr>
+    <th data-k="race">Race</th><th data-k="d">D nominee</th><th data-k="dScore">D</th><th data-k="r">R nominee</th><th data-k="rScore">R</th>
+    <th data-k="gap">Gap</th><th data-k="wt">DC wt</th><th data-k="rating">Rating</th><th data-k="relevance" class="sorted">Relevance</th>
+    <th data-k="ifD">If D wins</th><th data-k="status">Status</th><th data-k="margin">Margin</th><th data-k="close">Polls close</th>
+  </tr></thead><tbody></tbody></table></div>
+</section>
+
+<section class="card">
+  <h2>Run log</h2>
+  <p class="sub">One row per scheduled update.</p>
+  <div class="tbl-scroll"><table id="runs"><thead><tr><th>Run (ET)</th><th>Called since last run</th><th>Projection change</th><th>Note</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<p class="foot">Data: <code>data.enc.json</code> in this folder (AES-GCM, decrypted here), rewritten by a scheduled Claude task hourly on election night and daily after. Results are only marked "called" when a named organization has called the race. Ratings from Cook Political Report and Sabato's Crystal Ball final maps (Nov 2, 2026). Data-center capacity from dcmap, Cleanview and utility filings.</p>
+</div><!-- /app -->
+</div>
+
+<script>
+(async function(){
+  const $ = s => document.querySelector(s);
+  const b64 = s => Uint8Array.from(atob(s), c=>c.charCodeAt(0));
+  async function decrypt(enc, pw){
+    const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(enc.salt), iterations:enc.iter||200000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['decrypt']);
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(enc.iv)}, key, b64(enc.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  let enc;
+  try{
+    const r = await fetch('data.enc.json?t=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) throw new Error(r.status);
+    enc = await r.json();
+  }catch(e){
+    $('#stamp').innerHTML = '<span class="err">Could not load data (' + e.message + ').</span>';
+    return;
+  }
+  let data = null;
+  let saved = null; try{ saved = sessionStorage.getItem('midterms-pw'); }catch(_){}
+  if(saved){ try{ data = await decrypt(enc, saved); }catch(_){ data = null; } }
+  if(!data){
+    $('#gate').hidden = false;
+    data = await new Promise(resolve=>{
+      $('#gate-form').addEventListener('submit', async ev=>{
+        ev.preventDefault();
+        const pw = $('#pw').value;
+        $('#gate-msg').textContent = '';
+        try{
+          const d = await decrypt(enc, pw);
+          try{ sessionStorage.setItem('midterms-pw', pw); }catch(_){}
+          resolve(d);
+        }catch(_){ $('#gate-msg').textContent = 'Wrong passphrase.'; }
+      });
+    });
+    $('#gate').hidden = true;
+  }
+  $('#app').hidden = false;
+  const races = data.races.slice();
+  $('#doclink').href = data.doc || '#';
+  const upd = new Date(data.updated);
+  $('#stamp').textContent = 'Updated ' + upd.toLocaleString('en-US',{dateStyle:'medium', timeStyle:'short', timeZone:'America/New_York'}) + ' ET';
+
+  // ---- status helpers
+  function cls(r){
+    const s = (r.status||'').toLowerCase();
+    if(s.startsWith('called')) return s.includes(' r') || s.endsWith('r') ? 'cr' : 'cd';
+    if(s.startsWith('leading')) return s.includes(' r') || s.endsWith('r') ? 'lr' : 'ld';
+    return 'pending';
+  }
+  function partyWon(r){ const c = cls(r); return c==='cd'?'D':c==='cr'?'R':null; }
+  function signed(r){
+    const p = partyWon(r); if(!p || r.ifD==='neutral') return 0;
+    const dWinsSign = r.ifD==='headwind' ? -1 : 1;
+    return (p==='D' ? dWinsSign : -dWinsSign) * r.relevance;
+  }
+
+  // ---- projection
+  const P = data.projection || {};
+  $('#proj-label').textContent = P.label || '—';
+  $('#proj-lead').textContent = P.lead || '';
+  $('#proj-sub').textContent = 'As of ' + upd.toLocaleString('en-US',{month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZone:'America/New_York'}) + ' ET';
+  $('#proj-bullets').innerHTML = (P.bullets||[]).map(b=>'<li>'+esc(b)+'</li>').join('');
+  $('#sen').textContent = (P.chambers||{}).senate || '—';
+  $('#hse').textContent = (P.chambers||{}).house || '—';
+  const tally = races.reduce((a,r)=>a+signed(r),0);
+  const maxAbs = Math.max(6, races.reduce((a,r)=>a+r.relevance,0)/3);
+  const tEl = $('#tally'); tEl.textContent = (tally>0?'+':'') + tally.toFixed(1);
+  tEl.className = 'v ' + (tally<0?'head':tally>0?'tail':'');
+  const pct = Math.min(50, Math.abs(tally)/maxAbs*50);
+  const fill = $('#meter-fill');
+  fill.style.background = tally<0 ? 'var(--head)' : 'var(--tail)';
+  if(tally<0){ fill.style.right='50%'; fill.style.width=pct+'%'; } else { fill.style.left='50%'; fill.style.width=pct+'%'; }
+  const nC = races.filter(r=>partyWon(r)).length, nL = races.filter(r=>cls(r)==='ld'||cls(r)==='lr').length;
+  $('#n-called').textContent = nC + ' / ' + races.length; $('#n-lead').textContent = nL; $('#n-pend').textContent = races.length-nC-nL;
+
+  // ---- chart
+  let filter = 'all';
+  function drawChart(){
+    const rows = races.filter(r => filter==='all' ? true : filter==='top' ? r.relevance>=1 : r.office===filter)
+                      .sort((a,b)=>b.relevance-a.relevance);
+    const W = 940, left = 92, right = 74, rowH = 22, top = 26;
+    const H = top + rows.length*rowH + 10;
+    const maxV = Math.max(1, ...rows.map(r=>r.relevance));
+    const x = v => left + (W-left-right) * v/maxV;
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Market relevance by race">
+      <defs>
+        <pattern id="hd" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--dem)"/></pattern>
+        <pattern id="hr" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--rep)"/></pattern>
+      </defs>`;
+    const ticks = maxV>=6 ? [0,2,4,6] : [0,1,2,3,4,5].filter(t=>t<=maxV+0.01);
+    ticks.forEach(t=>{ s += `<line class="gridl" x1="${x(t)}" x2="${x(t)}" y1="${top-6}" y2="${H-8}"/><text class="axis-t" x="${x(t)}" y="${top-12}">${t}</text>`; });
+    rows.forEach((r,i)=>{
+      const y = top + i*rowH;
+      const c = cls(r);
+      const w = Math.max(0, x(r.relevance)-left);
+      const st = c==='pending' ? `x="${left+0.75}" y="${y+3.75}" width="${Math.max(0,w-1.5)}" height="${rowH-7.5}"` : `x="${left}" y="${y+3}" width="${w}" height="${rowH-6}"`;
+      const bar = r.relevance===0 ? '' : `<rect class="bar ${c}" data-i="${races.indexOf(r)}" ${st} rx="3"/>`;
+      s += `<text class="lbl ${r.relevance===0?'muted':''}" x="${left-8}" y="${y+rowH/2}" text-anchor="end">${esc(r.race)}</text>${bar}
+            <text class="val" x="${left + w + 6}" y="${y+rowH/2}">${r.relevance.toFixed(1)}${partyWon(r)?' · '+partyWon(r):''}</text>
+            <rect class="hit" data-i="${races.indexOf(r)}" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/>`;
+    });
+    s += '</svg>';
+    $('#chart').innerHTML = s;
+  }
+  drawChart();
+  $('#filters').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    filter = b.dataset.f;
+    [...$('#filters').children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+    drawChart();
+  });
+  const tip = $('#tip'), wrap = document.querySelector('.chart-scroll');
+  wrap.addEventListener('mousemove', e=>{
+    const h = e.target.closest('.hit, .bar'); if(!h){ tip.style.display='none'; return; }
+    const r = races[+h.dataset.i];
+    tip.innerHTML = `<b>${esc(r.race)}</b> · <span class="m">${esc(r.rating)} · DC wt ${r.wt}</span><br>
+      D: ${esc(r.d)} (${fmt(r.dScore)}) · R: ${esc(r.r)} (${fmt(r.rScore)})<br>
+      ${esc(r.note||'')}${r.note?'<br>':''}<span class="m">${esc(r.status)}${r.winner?' · '+esc(r.winner):''}${r.margin?' · '+esc(r.margin):''}</span>`;
+    tip.style.display='block';
+    const rect = wrap.getBoundingClientRect();
+    let lx = e.clientX - rect.left + 14, ly = e.clientY - rect.top + 14;
+    if(lx + 290 > rect.width) lx = e.clientX - rect.left - 290;
+    tip.style.left = lx+'px'; tip.style.top = ly+'px';
+  });
+  wrap.addEventListener('mouseleave', ()=> tip.style.display='none');
+
+  // ---- table
+  let sortK = 'relevance', sortDir = -1;
+  function drawTable(){
+    const rows = races.slice().sort((a,b)=>{
+      const va=a[sortK], vb=b[sortK];
+      if(typeof va==='number') return (va-vb)*sortDir;
+      return String(va).localeCompare(String(vb))*sortDir;
+    });
+    $('#races tbody').innerHTML = rows.map(r=>`<tr>
+      <td><b>${esc(r.race)}</b></td>
+      <td><a href="${esc(r.dUrl)}" target="_blank" rel="noopener">${esc(r.d)}</a></td><td class="num"><span class="score ${sc(r.dScore)}">${fmt(r.dScore)}</span></td>
+      <td><a href="${esc(r.rUrl)}" target="_blank" rel="noopener">${esc(r.r)}</a></td><td class="num"><span class="score ${sc(r.rScore)}">${fmt(r.rScore)}</span></td>
+      <td class="num">${r.gap}</td><td class="num">${r.wt}</td><td>${esc(r.rating)}</td><td class="num"><b>${r.relevance.toFixed(1)}</b></td>
+      <td>${r.ifD==='neutral'?'<span class="muted">neutral</span>':esc(r.ifD)}</td>
+      <td><span class="pill ${cls(r)}">${esc(r.status)}</span>${r.winner?'<br><span class="muted">'+esc(r.winner)+(r.caller?' · '+esc(r.caller):'')+'</span>':''}</td>
+      <td class="num">${esc(r.margin||'')}</td><td class="num">${esc(r.close)}</td></tr>`).join('');
+    document.querySelectorAll('#races th').forEach(th=>th.classList.toggle('sorted', th.dataset.k===sortK));
+  }
+  drawTable();
+  document.querySelector('#races thead').addEventListener('click', e=>{
+    const th = e.target.closest('th'); if(!th) return;
+    if(sortK===th.dataset.k) sortDir*=-1; else { sortK=th.dataset.k; sortDir = typeof races[0][sortK]==='number' ? -1 : 1; }
+    drawTable();
+  });
+
+  // ---- runs
+  $('#runs tbody').innerHTML = (data.runs||[]).map(r=>`<tr><td class="num">${esc(r.time)}</td><td>${esc(r.called)}</td><td>${esc(r.change)}</td><td class="muted">${esc(r.note||'')}</td></tr>`).join('');
+
+  function fmt(n){ return (n>0?'+':'')+n; }
+  function sc(n){ return n<0?'neg':n>0?'pos':''; }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+})();
+</script>
+</body>
+</html>
