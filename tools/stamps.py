@@ -22,12 +22,14 @@ STATE = os.path.expanduser("~/.pages_stamps.json")
 def _file_fp(path):
     if path.lower().endswith(".pdf"):
         try:
-            out = subprocess.run(
-                ["gs", "-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=gray",
+            r = subprocess.run(
+                ["gs", "-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pnggray",
                  "-r50", "-o", "-", path],
-                capture_output=True, timeout=120).stdout
-            if out:
-                return hashlib.sha256(out).hexdigest()
+                capture_output=True, timeout=120)
+            # require a clean exit AND real image bytes -- an error banner
+            # on stdout once froze every PDF at one constant fingerprint
+            if r.returncode == 0 and r.stdout[:4] == b"\x89PNG":
+                return hashlib.sha256(r.stdout).hexdigest()
         except Exception:
             pass
     with open(path, "rb") as f:
