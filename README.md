@@ -15,3 +15,7 @@ Every tile follows the same format:
 - An inline SVG icon in `.top`, red/grey palette (`#e11d48`/`#9ca3af`).
 
 Every page's top bar carries, left-aligned: `⌂ Home · ↻ Refresh · 🔒 Lock` (Lock clears the shared `pages:pw` from localStorage; copy the bar from an existing source — it is not auto-injected).
+
+## Fedspeak (cloud-built)
+
+`fedspeak/` is rebuilt by a cloud scheduled task, not the local cron: `PW_FEDSPEAK=... python3 tools/build_fedspeak.py digest.md` renders the Markdown digest, encrypts it to `fedspeak/index.html`, and writes `fedspeak/stamp.json` (public, update time only). That build never touches the home page, so the tile's stamp comes from `stamp.json` rather than from `src/home/index.html`.
