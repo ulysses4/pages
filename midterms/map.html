@@ -231,14 +231,14 @@ td.num{font-family:var(--mono); text-align:right; white-space:nowrap;}
     enc = await r1.json(); topo = await r2.json();
   }catch(e){ $('#stamp').innerHTML = '<span class="err">Could not load (' + esc(e.message) + ').</span>'; return; }
   let data = null, saved = null;
-  try{ saved = sessionStorage.getItem('midterms-pw'); }catch(_){}
+  try{ saved = localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); }catch(_){}
   if(saved){ try{ data = await decrypt(enc, saved); }catch(_){ data = null; } }
   if(!data){
     $('#gate').hidden = false;
     data = await new Promise(resolve=>{
       $('#gate-form').addEventListener('submit', async ev=>{
         ev.preventDefault(); const pw = $('#pw').value; $('#gate-msg').textContent='';
-        try{ const d = await decrypt(enc, pw); try{ sessionStorage.setItem('midterms-pw', pw); }catch(_){} resolve(d); }
+        try{ const d = await decrypt(enc, pw); try{ localStorage.setItem('pages:pw', pw); }catch(_){} resolve(d); }
         catch(_){ $('#gate-msg').textContent = 'Wrong passphrase.'; }
       });
     });

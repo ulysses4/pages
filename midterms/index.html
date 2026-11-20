@@ -161,7 +161,7 @@ td a{color:inherit; text-decoration:none; border-bottom:1px dotted var(--axis);}
 <div id="gate" hidden>
   <div class="tile">
     <h2>Enter passphrase</h2>
-    <p>The tracker data is encrypted in the browser. Nothing is sent anywhere; the passphrase is kept for this tab only.</p>
+    <p>The tracker data is encrypted in the browser. Enter the site password; it is remembered on this device.</p>
     <form id="gate-form"><input id="pw" type="password" autocomplete="current-password" placeholder="Passphrase" autofocus><button type="submit">Open</button></form>
     <p class="msg" id="gate-msg"></p>
   </div>
@@ -267,7 +267,7 @@ td a{color:inherit; text-decoration:none; border-bottom:1px dotted var(--axis);}
     return;
   }
   let data = null;
-  let saved = null; try{ saved = sessionStorage.getItem('midterms-pw'); }catch(_){}
+  let saved = null; try{ saved = localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); }catch(_){}
   if(saved){ try{ data = await decrypt(enc, saved); }catch(_){ data = null; } }
   if(!data){
     $('#gate').hidden = false;
@@ -278,7 +278,7 @@ td a{color:inherit; text-decoration:none; border-bottom:1px dotted var(--axis);}
         $('#gate-msg').textContent = '';
         try{
           const d = await decrypt(enc, pw);
-          try{ sessionStorage.setItem('midterms-pw', pw); }catch(_){}
+          try{ localStorage.setItem('pages:pw', pw); }catch(_){}
           resolve(d);
         }catch(_){ $('#gate-msg').textContent = 'Wrong passphrase.'; }
       });
