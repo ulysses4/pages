@@ -12,6 +12,8 @@ from datetime import datetime
 SRC = "/home/ulysses/GitHub/SDR/daily/US_inflation_tables_today.pdf"
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "sdr",
                    "index.html")
+HOME = os.path.join(os.path.dirname(__file__), "..", "src", "home",
+                    "index.html")
 
 LOCK_JS = ("try{localStorage.removeItem('pages:pw');"
            "sessionStorage.removeItem('pages:pw')}catch(e){};"
@@ -70,6 +72,18 @@ if (!/iPhone|iPad/.test(navigator.userAgent)) {{
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w").write(html)
     print(f"-> {os.path.normpath(OUT)} ({len(html)/1e3:.0f} KB, as of {stamp})")
+
+    # mirror the stamp onto the landing page's SDR tile (PDP-tile format;
+    # caller re-encrypts the home page alongside this one)
+    import re
+    tile = (f"(updated {dt:%A} at "
+            f"{dt.strftime('%I:%M%p').lstrip('0')}, {dt:%m/%d/%Y})")
+    h = open(HOME).read()
+    h2 = re.sub(r"(<b>SDR</b><span>)[^<]*(</span>)",
+                rf"\g<1>{tile}\g<2>", h)
+    if h2 != h:
+        open(HOME, "w").write(h2)
+        print(f"-> {os.path.normpath(HOME)} (tile stamp refreshed)")
 
 
 if __name__ == "__main__":
