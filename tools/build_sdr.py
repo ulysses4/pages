@@ -7,7 +7,11 @@ cadence, hash-guarded on the source PDF), then encrypted via protect.js.
 
 import base64
 import os
+import sys
 from datetime import datetime
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from stamps import stamp
 
 SRC = "/home/ulysses/GitHub/SDR/daily/US_inflation_tables_today.pdf"
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "sdr",
@@ -21,9 +25,13 @@ LOCK_JS = ("try{localStorage.removeItem('pages:pw');"
 
 
 def main():
-    dt = datetime.fromtimestamp(os.path.getmtime(SRC))
-    stamp = (f"{dt:%A} {dt.strftime('%I:%M%p').lstrip('0')}, "
-             f"{dt:%m/%d/%Y}")
+    dt, changed = stamp("sdr", [SRC])
+    if not changed and os.path.exists(OUT):
+        print("sdr: report unchanged since "
+              f"{dt:%m/%d %H:%M}; nothing to publish")
+        sys.exit(3)
+    stamp_s = (f"{dt:%A} {dt.strftime('%I:%M%p').lstrip('0')}, "
+               f"{dt:%m/%d/%Y}")
     b64 = base64.b64encode(open(SRC, "rb").read()).decode()
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -50,7 +58,7 @@ def main():
     <a class="home" href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false" title="Reload latest version">&#8635; Refresh</a>
     <a class="home" href="#" onclick="{LOCK_JS}" title="Forget the password on this device">&#128274; Lock</a></div>
   <h1>SDR</h1>
-  <p class="sub">Today&#8217;s US inflation swap tables &middot; as of {stamp}</p>
+  <p class="sub">Today&#8217;s US inflation swap tables &middot; as of {stamp_s}</p>
   <button id="open">Open report (PDF)</button>
   <div id="holder"></div>
 </main>
@@ -71,7 +79,7 @@ if (!/iPhone|iPad/.test(navigator.userAgent)) {{
 </html>"""
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w").write(html)
-    print(f"-> {os.path.normpath(OUT)} ({len(html)/1e3:.0f} KB, as of {stamp})")
+    print(f"-> {os.path.normpath(OUT)} ({len(html)/1e3:.0f} KB, as of {stamp_s})")
 
     # mirror the stamp onto the landing page's SDR tile (PDP-tile format;
     # caller re-encrypts the home page alongside this one)

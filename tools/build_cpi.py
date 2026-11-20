@@ -8,7 +8,11 @@ then encrypted via protect.js. Also restamps the landing CPI tile.
 import base64
 import os
 import re
+import sys
 from datetime import datetime
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from stamps import stamp
 
 CPI = "/home/ulysses/GitHub/CPI/"
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "cpi",
@@ -30,10 +34,13 @@ LOCK_JS = ("try{localStorage.removeItem('pages:pw');"
 
 
 def main():
-    dt = datetime.fromtimestamp(max(os.path.getmtime(CPI + f)
-                                    for f, _ in TABLES))
-    stamp = (f"{dt:%A} {dt.strftime('%I:%M%p').lstrip('0')}, "
-             f"{dt:%m/%d/%Y}")
+    dt, changed = stamp("cpi", [CPI + f for f, _ in TABLES])
+    if not changed and os.path.exists(OUT):
+        print("cpi: tables unchanged since "
+              f"{dt:%m/%d %H:%M}; nothing to publish")
+        sys.exit(3)
+    stamp_s = (f"{dt:%A} {dt.strftime('%I:%M%p').lstrip('0')}, "
+               f"{dt:%m/%d/%Y}")
     rows, blobs = [], []
     for i, (f, label) in enumerate(TABLES):
         b64 = base64.b64encode(open(CPI + f, "rb").read()).decode()
@@ -68,7 +75,7 @@ def main():
     <a class="home" href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false" title="Reload latest version">&#8635; Refresh</a>
     <a class="home" href="#" onclick="{LOCK_JS}" title="Forget the password on this device">&#128274; Lock</a></div>
   <h1>CPI</h1>
-  <p class="sub">US CPI tables &middot; as of {stamp}</p>
+  <p class="sub">US CPI tables &middot; as of {stamp_s}</p>
   {chr(10).join(rows)}
   <iframe id="viewer"></iframe>
 </main>
@@ -93,7 +100,7 @@ function openPdf(i) {{
 </html>"""
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w").write(html)
-    print(f"-> {os.path.normpath(OUT)} ({len(html)/1e3:.0f} KB, as of {stamp})")
+    print(f"-> {os.path.normpath(OUT)} ({len(html)/1e3:.0f} KB, as of {stamp_s})")
 
     tile = (f"(updated {dt:%A} at "
             f"{dt.strftime('%I:%M%p').lstrip('0')}, {dt:%m/%d/%Y})")

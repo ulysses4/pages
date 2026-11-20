@@ -8,9 +8,13 @@ Thursday after the charts regenerate, then encrypted via tools/protect.js.
 import base64
 import io
 import os
+import sys
 from datetime import datetime
 
 from PIL import Image
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from stamps import stamp
 
 PDP = "/home/ulysses/GitHub/PDP/"
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "pdp",
@@ -33,9 +37,12 @@ LOCK_JS = ("try{localStorage.removeItem('pages:pw');"
 
 
 def main():
-    stamp = max(os.path.getmtime(PDP + f) for _, fs in SECTIONS
-                for f, _ in fs)
-    dt = datetime.fromtimestamp(stamp)
+    dt, changed = stamp("pdp", [PDP + f for _, fs in SECTIONS
+                                for f, _ in fs])
+    if not changed and os.path.exists(OUT):
+        print("pdp: charts unchanged since "
+              f"{dt:%m/%d %H:%M}; nothing to publish")
+        sys.exit(3)
     asof = (f"(updated {dt:%A} at "
             f"{dt.strftime('%I:%M%p').lstrip('0')}, {dt:%m/%d/%Y})")
     asof_long = dt.strftime("%-d %B %Y")
