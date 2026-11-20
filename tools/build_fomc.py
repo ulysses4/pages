@@ -206,7 +206,7 @@ function openPdf(i) {{
     tile = (f"(updated {dt:%A} at "
             f"{dt.strftime('%I:%M%p').lstrip('0')}, {dt:%m/%d/%Y})")
     h = open(HOME).read()
-    h2 = re.sub(r"(<b>FOMC</b><span>)[^<]*(</span>)",
+    h2 = re.sub(r"(<b>FOMC Reaction and Rates Pack</b><span>)[^<]*(</span>)",
                 rf"\g<1>{tile}\g<2>", h)
     if h2 != h:
         open(HOME, "w").write(h2)
