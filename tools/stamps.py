@@ -60,3 +60,8 @@ def stamp(key, paths):
     json.dump(state, open(tmp, "w"), indent=1)
     os.replace(tmp, STATE)
     return when, True
+
+
+if __name__ == "__main__":
+    import sys
+    print(fingerprint(sys.argv[1:]))
