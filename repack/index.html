@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repack</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a0a;font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#f3f4f6}
+  form{background:linear-gradient(160deg,#1f1f1f,#161616);border:1px solid #2a2a2a;border-radius:18px;padding:28px 26px;width:min(92vw,360px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  h1{font-size:18px;margin:0 0 4px} p{margin:0 0 16px;color:#9ca3af;font-size:14px}
+  input{width:100%;box-sizing:border-box;font-size:17px;padding:11px 12px;border:1px solid #2a2a2a;border-radius:10px;background:#0f0f0f;color:#f3f4f6}
+  input:focus{outline:none;border-color:#e11d48}
+  button{margin-top:12px;width:100%;padding:11px;border:0;border-radius:10px;background:#e11d48;color:#fff;font-size:16px;cursor:pointer}
+  .err{color:#f87171;font-size:14px;margin-top:10px;min-height:20px}
+  a{color:#9ca3af;font-size:13px;display:block;text-align:center;margin-top:14px;text-decoration:none}
+  a:hover{color:#f3f4f6}
+</style></head><body>
+<form id="f" autocomplete="off">
+  <h1>Repack</h1><p>Enter the password to open this page.</p>
+  <input id="pw" type="password" placeholder="Password" autofocus>
+  <button type="submit">Open</button>
+  <div class="err" id="err"></div>
+  <a href="../">⌂ Home</a><a href="#" onclick="location.replace(location.pathname+'?r='+Date.now());return false">↻ Refresh</a>
+</form>
+<script>
+const P={"salt":"/JGHVOIA1uMbdliKO6izig==","iv":"NnNkBbleeP+59qYP","iterations":600000,"ct":"RyTYWgeI6WNdP6rgQ1N0AWFx1WSBUZ8xougat0LU8UO+/EQAX8WBMl9Oh99j0VRnl7SNGGmZzPhknX5lUsYVfHTZ5LciaKIrb6VNVb0bRXLY3kFAvVtEG+5UTs+DbkUJ94Xq4vG8xR3HuuJMwYYIc3dAxAHzd64jFWDU9CLy99WRVAWELh/IwgEZ6IdsgrbGyPNpPBc1c5edRONvUz6WfnMCZX4YPIDFlQvWcV7fkTAxiA4s1xalFWJZDJ/hYwAuJS34d48yDmUv76FPFsx3Av9Dp0CoRJaqyV6YGgCCEMEdw4uXjJqJl7eH0DtcCYADisKFcQeOYZvgVJnYNbBlNiB2YH1o2x9AZWW4OyAuFEXMyCJaNM8xUn1LXOlGYegHbNGQdXjoC4eZtDDpHd2YRGNdLnWq2zrU99H0CCeiSJYKx69vl+Zsz1Pg4KA6k3K/41crQFb6q7x2CcWr08KwLtqeNumuK8SSeLVA+0eo/eQBSWTUie4qfyzNABDE2mU5sImQpJ35q/+6kmeTjU9h6IXc5/eBHW8vUp1Xhh9pk0WH1PhWAPpHd1B2OtrLPzq3jp+gE4pvq8fhnlR23ixm8d5fuFe0FzbykI1QAZiZZxZWob0X4AOuYxuN0G8jL800ify4SHtdskmHZ4dTR6tXn0sLYUmAflqrXeTDG9ueapQo3ellJQm8sfnRT+4i8njPe1/uR1L8WVufjXhS3NFwZEiMyokhh0coeAX/1xD88r/6dY4gB0bIJYvnyEcUYbsiOHZSk5hmonxzgWuQhg3PyXXT6rhiLzIccjmA98M1SqCN/fN/eqDkTEzei1rwNAQpPDGpulXibX0EpmTPyMIOATlQfxJr6Hj+SKBana7ZE+NEQMRaL/DKOPSlgPEtwWLsn7qN7Mq3CwBR0cKtUA0rg4r8lJ3H3xJoJG9ubwugFOaticS0f02e9QsQWBvT9rLImqS2XmAsAHdPvkyhEhzlRoNg7LuCgnSqQEucs0Jp198gdxcQpPYZ7hwxxgwNbfvUrATu14tiGPjqO6+OlOee7pQohwiFt0g6grhFN0gv2ZP1AKnZyPMuZe5Jponxf5PU72KQfqM7zT3apL52gE6UqbfZb3n/qa+jg/gbWzKhmLueT8A9wNKWWaAIc3n84L8p2eRoM5eFlNBfZ1J3qxjfMi/qPaapxar64YTw1EB0ja5p9ob0e/7E6B4nsf/DBj054b+8YyCGsQQIJwliuWVcAcMbDrCQQWsm2qaW8iKTnZFJ6BAbuUqaYf0XCyjPvXBSqu9JtFW/FDM9aZSXK00nwpd62ey4x/ZAJSNrj+MYefeW4zTuCZgovdS5CtcWTUVrzXSMp0dmxehjFmI8tU7Ff+0OiyZNXCsOGRYvQpVMoqlFh1s5/gHQlAZu2flI8pZ+qz24GC3Sv2tTGHKi7ujACoEjo04fBCLt0/QFF1mQztLh5CNNELp0Exb/AkAi39iaIgWdSgMJIIx1qtgtoNjkgidk07e4mMdWMbCMgTbcdjvzSt6mbyDfk+HzW7CCI6IRr2w9ikbzm6HX7scZXF1YISh9FOlU6TPaaoCjisusXILwYJfPdZyMP3s0qf/SeuMPWuJjze86njKzc/vr6Q=="};
+const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+// after rendering, probe the server copy in the background; if this page is a
+// stale cache (its fingerprint is absent from the live copy), reload once with
+// a cache-buster. 20s guard stops any reload loop.
+const FRESH='<scr'+'ipt>(()=>{const C="RyTYWgeI6WNdP6rgQ1N0AWFx1WSBUZ8x";try{if((+sessionStorage.getItem("pages:fr")||0)>Date.now()-20000)return}catch(_){}fetch(location.pathname,{cache:"no-store"}).then(r=>r.ok?r.text():"").then(t=>{if(t&&t.indexOf(C)<0){try{sessionStorage.setItem("pages:fr",String(Date.now()))}catch(_){}location.replace(location.pathname+"?r="+Date.now())}}).catch(()=>{})})()</scr'+'ipt>';
+async function unlock(pw){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u8(P.salt),iterations:P.iterations,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:u8(P.iv)},key,u8(P.ct));
+  return new TextDecoder().decode(pt);
+}
+document.getElementById('f').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const err=document.getElementById('err'); err.textContent='Checking…';
+  try{ const html=await unlock(document.getElementById('pw').value);
+       try{localStorage.setItem('pages:pw',document.getElementById('pw').value)}catch(_){}
+       document.open(); document.write(html+FRESH); document.close(); }
+  catch(_){ err.textContent='Wrong password.'; }
+});
+(async()=>{ try{ const s=localStorage.getItem('pages:pw')||sessionStorage.getItem('pages:pw'); if(s){ const html=await unlock(s); document.open(); document.write(html+FRESH); document.close(); } }catch(_){} })();
+</script></body></html>
